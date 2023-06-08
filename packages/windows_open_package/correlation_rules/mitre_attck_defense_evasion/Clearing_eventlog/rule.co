@@ -3,12 +3,23 @@ event Clear_event:
         event_src.host
     filter {
         filter::NotFromCorrelator()
+
         and event_src.title == "windows"
-        # system, application, setup
-        and lower(event_src.subsys) == "system"
-        and msgid == "104"
         and action == "clean"
         and object == "log"
+
+        and 
+        (
+                (
+                    lower(event_src.subsys) == "system"         # system, application, setup, etc 
+                    and msgid == "104"
+                )
+            or 
+                (
+                    lower(event_src.subsys) == "security"     # security
+                    and msgid == "1102"
+                )
+        )
     }
 
 rule Clearing_eventlog: Clear_event
@@ -33,7 +44,7 @@ rule Clearing_eventlog: Clear_event
         $object.name = object.name
         $object.type = object.type
         $object.property = object.property
-        $object.value = object.value
+        $object.value = object.value    # Path to backup logs, without Security
         $object.vendor = object.vendor
         $object.state = object.state
 
@@ -58,6 +69,7 @@ emit {
     $correlation_type = "incident"
 
     $subject = "account"
+    $action = "clean"
     $object = "log"
     $status = "success"
 

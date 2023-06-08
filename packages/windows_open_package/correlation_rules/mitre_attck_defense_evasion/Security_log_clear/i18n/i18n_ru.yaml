@@ -1,4 +1,0 @@
-Description: 'Пользователь очистил журнал событий Security.'
-EventDescriptions:
-    - LocalizationId: 'corrname_Security_log_clear'
-      EventDescription: 'Пользователь {subject.account.domain}\{subject.account.name} очистил журнал событий {object.name} на узле {event_src.host}'
