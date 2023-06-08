@@ -11,6 +11,7 @@ subject.account.domain = lower($Data["SubjectDomainName"])
 subject.account.name = lower($Data["SubjectUserName"])
 subject.account.session_id = maybe_number16($Data["SubjectLogonId"])
 
+object.id = $Data["ObjectGUID"]
 object.name = $Data["ObjectDN"]
 object.type = $Data["ObjectClass"]
 object.property = $Data["AttributeLDAPDisplayName"]

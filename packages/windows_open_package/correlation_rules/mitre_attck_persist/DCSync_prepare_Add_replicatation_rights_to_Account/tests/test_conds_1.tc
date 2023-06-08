@@ -1,0 +1,2 @@
+table_list default
+expect 1 {"correlation_name": "DCSync_prepare_Add_replicatation_rights_to_Account"}
