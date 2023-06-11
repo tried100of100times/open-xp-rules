@@ -79,9 +79,9 @@ emit {
 
     $importance = "medium"
 
-    $category.generic = "Persistence"
-    $category.high = "Account Manipulation"
-    $category.low = ""
+    $category.generic = "Attack"
+    $category.high = "Persistence"
+    $category.low = "Account Manipulation"
 
     $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
     $incident.aggregation.timeout = 2h
