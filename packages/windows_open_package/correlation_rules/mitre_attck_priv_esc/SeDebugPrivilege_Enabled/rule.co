@@ -3,17 +3,13 @@ event AdjustTokenPrivileges:
         event_src.host
     filter {
         filter::NotFromCorrelator() and
+        event_src.title == "windows" and 
         msgid == "4703" and
         object.property == "privileges" and 
         find_substr(lower(object.value),"sedebugprivilege") != null
     }
 
 rule SeDebugPrivilege_Enabled: AdjustTokenPrivileges
-
-    init {
-        $labels = "w_auto"
-    }
-
     on AdjustTokenPrivileges {
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
@@ -46,7 +42,6 @@ rule SeDebugPrivilege_Enabled: AdjustTokenPrivileges
     }
 
 emit {
-    $correlation_name = "SeDebugPrivilege_Enabled"
     $correlation_type = "incident"
 
     $importance = "medium"
@@ -56,11 +51,11 @@ emit {
     $object = "account"
     $status = "success"
 
-    $category.generic = "Privilege Escalation"
-    $category.high = "Access Token Manipulation"
-    $category.low = "Adjust Token Privileges"
+    $category.generic = "Attack"
+    $category.high = "Privilege Escalation"
+    $category.low = "Access Token Manipulation: Adjust Token Privileges"
 
-    $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
+    $incident.aggregation.key = join([$correlation_name, $event_src.host, $subject.account.id], "|")
     $incident.aggregation.timeout = 2h
 
     $incident.severity = "medium"
