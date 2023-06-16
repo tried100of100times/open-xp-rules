@@ -62,6 +62,8 @@ if find_substr($Data["TargetServerName"], '.') != null then
     dst.hostname = lower(substr($Data["TargetServerName"], 0, find_substr($Data["TargetServerName"], '.')))
 elif find_substr(lower($Data["TargetServerName"]), 'localhost') == null then
     dst.hostname = lower($Data["TargetServerName"])
+elif find_substr(lower($Data["TargetServerName"]), 'localhost') != null then
+	dst.hostname = 'localhost'
 endif
 
 time = $TimeCreated["SystemTime"]

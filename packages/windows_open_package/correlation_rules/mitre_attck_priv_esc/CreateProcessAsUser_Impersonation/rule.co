@@ -3,20 +3,23 @@ event Account_LogonAttmpt:
         event_src.host, subject.account.name, subject.process.id, object.account.name
     filter {
         filter::NotFromCorrelator() and
+        event_src.title == "windows" and 
         msgid == "4648" and 
         lower(object) == "account" and
         lower(action) == "elevate" and   
         subject.account.name != object.account.name and
         in_list(["winlogon.exe", "wininit.exe"], lower(subject.process.name)) == False and # UMFD-*, DWM-*
-        in_list(["localhost", $event_src.hostname], dst.hostname) == True
+        in_list(["localhost", event_src.hostname], dst.hostname)
     }
+
 event Account_LogonSuccess:
     key:
         event_src.host, subject.account.name, subject.process.id, object.account.name
     filter {
         filter::NotFromCorrelator() and
+        event_src.title == "windows" and 
         msgid == "4624" and 
-        in_list(["2", "3"], logon_type) != null and
+        in_list([2, 3], logon_type) and
         lower(object) == "account" and
         lower(action) == "elevate" and
         subject.account.name != object.account.name and 
@@ -24,11 +27,7 @@ event Account_LogonSuccess:
         in_list(["winlogon.exe", "wininit.exe"], subject.process.name) == False # UMFD-*, DWM-*
     }
 
-rule CreateProcessAsUser_Impersonation: Account_LogonSuccess and Account_LogonAttmpt
-
-    init {
-        $labels = "w_auto"
-    }
+rule CreateProcessAsUser_Impersonation: Account_LogonAttmpt and Account_LogonSuccess
 
     on Account_LogonSuccess {
         $subject.account.name = subject.account.name
@@ -87,7 +86,6 @@ rule CreateProcessAsUser_Impersonation: Account_LogonSuccess and Account_LogonAt
     }
 
 emit {
-    $correlation_name = "CreateProcessAsUser_Impersonation"
     $correlation_type = "incident"
 
     $importance = "medium"
