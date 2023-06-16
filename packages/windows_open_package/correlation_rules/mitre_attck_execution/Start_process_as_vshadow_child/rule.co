@@ -3,7 +3,8 @@ event Process_Start:
         event_src.host
     filter {
         filter::NotFromCorrelator() and
-        in_list(["4688", "1"], msgid) != null and
+        in_list(["4688", "1"], msgid) and
+        in_list(["windows", "sysmon"], event_src.title) and 
         lower(object) == "process"  and
         lower(action) == "start" and 
         lower(object.process.parent.name) == "vshadow.exe"

@@ -3,7 +3,8 @@ event Process_Start:
         event_src.host
     filter {
         filter::NotFromCorrelator() and 
-        in_list(["4688", "1"], msgid) != null and
+        in_list(["4688", "1"], msgid) and
+        in_list(["windows", "sysmon"], event_src.title) and 
         lower(object) == "process"  and
         lower(action) == "start" and 
         lower(object.process.name) == "vssvc.exe" and
@@ -14,7 +15,8 @@ event Process_Stop:
         event_src.host
     filter {
         filter::NotFromCorrelator() and
-        in_list(["4689", "5"], msgid) != null and
+        in_list(["4689", "5"], msgid) and
+        in_list(["windows", "sysmon"], event_src.title) and
         lower(object) == "process"  and
         lower(action) == "stop" and
         lower(object.process.name) == "vssvc.exe"
@@ -25,8 +27,9 @@ event ServiceState_Change:
     filter {
         filter::NotFromCorrelator() and
         msgid == "7036" and 
+        event_src.title == "windows" and
         lower(object) == "application" and
-        in_list(["Теневое копирование тома", "Volume Shadow Copy"], object.name) != null
+        in_list(["Теневое копирование тома", "Volume Shadow Copy"], object.name)
     }
 
 rule VSSVC_service_state_changed: Process_Start or Process_Stop or ServiceState_Change
@@ -173,7 +176,7 @@ emit {
     $category.high = "Execution"
     $category.low = "System Services: Service Execution"
 
-    $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
+    $incident.aggregation.key = join([$correlation_name, lower($event_src.host)], "|")
     $incident.aggregation.timeout = 2h
 
     $incident.severity = $importance
