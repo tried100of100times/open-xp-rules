@@ -19,8 +19,6 @@ body:
     label: Тип контента
     description: К какому типу контента относится запрос?
     multiple: true
-    validations:
-      required: true
     options:
       - Корреляция
       - Нормализация
