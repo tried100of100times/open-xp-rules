@@ -1,11 +1,15 @@
 EVENTLOG = 'EventID="4657"'
 COND = lower($Channel)=="security" and $Provider["Name"]=="Microsoft-Windows-Security-Auditing"
 
+action = "modify"
 subject = "account"
-action = switch $Data["OperationType"]
-    case "%%1904" "create"
-    case "%%1905" "modify"
-    case "%%1906" "remove"
+switch $Data["OperationType"]
+    case "%%1904"
+		action = "create"
+    case "%%1905"
+		action = "modify"
+    case "%%1906"
+		action = "remove"
 endswitch
 object = "reg_object"
 
