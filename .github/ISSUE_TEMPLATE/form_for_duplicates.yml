@@ -19,8 +19,6 @@ body:
     label: Тип контента
     description: В каком типе контента обнаружена проблема?
     multiple: false
-    validations:
-      required: true
     options:
       - Корреляция
       - Нормализация
@@ -29,6 +27,8 @@ body:
       - Макрос
       - Агрегация
       - Другое
+  validations:
+    required: true
 - type: textarea
   attributes:
     label: Описание дубликата
