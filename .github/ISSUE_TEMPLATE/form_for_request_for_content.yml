@@ -29,6 +29,8 @@ body:
       - Макрос
       - Агрегация
       - Другое
+  validations:
+    required: true
 - type: textarea
   attributes:
     label: Какую задачу должен решать создаваемый контент?
