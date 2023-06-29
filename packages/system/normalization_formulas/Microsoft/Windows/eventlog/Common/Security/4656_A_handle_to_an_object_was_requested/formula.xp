@@ -30,6 +30,9 @@ object.fullpath = $Data["ObjectName"]
 object.id = $Data["HandleId"]
 object.type = $Data["ObjectType"]
 
+object.property = "GrantedAccess"
+object.value = $Data["AccessMask"]
+
 msgid = $EventID
 importance = "info"
 time = $TimeCreated["SystemTime"]

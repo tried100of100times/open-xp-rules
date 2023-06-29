@@ -45,6 +45,9 @@ subject.process.fullpath = $Data["ProcessName"]
 object.type = lower($Data["ObjectType"])
 object.fullpath = object.path + object.name
 
+object.property = "GrantedAccess"
+object.value = $Data["AccessMask"]
+
 datafield1 = $Data["HandleId"]                         # handle id
 datafield5 = $Data["AccessMask"]                       
 
