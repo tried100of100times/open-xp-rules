@@ -3,11 +3,11 @@ event RequestHandle:
         event_src.host, subject.process.name, object.name
     filter {
         filter::NotFromCorrelator() and
-        event_src.title == "windows" and
-        msgid == "4656" and
+
+        event_src.title == "windows" and msgid == "4656" and
         lower(object.type) == "process" and
         lower(object.name) == "lsass.exe" and
-        in_list(["avp.exe"], lower(subject.process.name)) == False
+        in_list(["avp.exe", "msmpeng.exe", "mrt.exe"], lower(subject.process.name)) == False
     }
 
 event AccessObject:
@@ -15,17 +15,13 @@ event AccessObject:
         event_src.host, subject.process.name, object.name
     filter {
         filter::NotFromCorrelator() and (
-            event_src.title == "windows" and msgid == "4663" or
-            event_src.title == "sysmon" and msgid == "10"
-        )
-        and (
-            lower(object.type) == "process" or lower(object)  == "process"
-        )
-        and (
+
+            (event_src.title == "windows" and msgid == "4663" and lower(object.type) == "process") or
+            (event_src.title == "sysmon" and msgid == "10" and lower(object)  == "process")
+        ) and (
             lower(object.name) == "lsass.exe" or lower(object.process.name) == "lsass.exe"
-        )
-        and
-        in_list(["avp.exe"], lower(subject.process.name)) == False
+        ) and
+        in_list(["avp.exe", "msmpeng.exe", "mrt.exe"], lower(subject.process.name)) == False
     }
 
 rule An_attempt_was_made_to_lsass_process: RequestHandle? -> AccessObject
@@ -80,7 +76,7 @@ rule An_attempt_was_made_to_lsass_process: RequestHandle? -> AccessObject
             $object.process.path = object.process.path
             $object.process.fullpath = object.process.fullpath
             $object.process.guid = object.process.guid
-        elif msgid == 4663 then
+        elif msgid == "4663" then
             $object.process.id = object.id
             $object.process.name = object.name
             $object.process.path = object.path

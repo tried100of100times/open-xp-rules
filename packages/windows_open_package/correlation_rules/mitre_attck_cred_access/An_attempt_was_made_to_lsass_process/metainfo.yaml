@@ -2,7 +2,7 @@ ObjectId: LOC-CR-31343766
 ContentAutoName: An_attempt_was_made_to_lsass_process
 ExpertContext:
     Created: 12.06.2023
-    Updated: 26.06.2023
+    Updated: 31.07.2023
     KnowledgeHolders:
         - driverenok
     Usecases:
@@ -17,11 +17,13 @@ ExpertContext:
         - Provider: Microsoft-Windows-Sysmon
           EventID:
               - 10
+    Improvements:
+        - Расширить список легитимных процессов, взаимодействующих с lsass
 ContentRelations:
     Implements:
         ATTACK:
             credential-access:
-                - T1003
+                - T1003.001
 EventDescriptions:
     - Criteria: correlation_name = "An_attempt_was_made_to_lsass_process" and status = "success" and subject.account.domain != null
       LocalizationId: corrname_An_attempt_was_made_to_lsass_process
