@@ -15,7 +15,7 @@ event ADDS_Replication_With_UserAccount:
         # We should have there the table list with privileged user accounts allowed for replication
         # by the way, *MSA accounts with $ like machine accounts https://learn.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview
         and find_substr(subject.account.name, "$") == null #not machine account
-
+        # + need exception for MSOL_* account
     }
 
 event ADDS_Replication_With_LocalSystemAccount:
@@ -29,7 +29,12 @@ event ADDS_Replication_With_LocalSystemAccount:
         and datafield5 == "0x100" # Control AccessMask
         and ( 
             find_substr(datafield2, "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2") != null or
-            find_substr(datafield2, "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2") != null  or
+            # Remark (see pseudo-code of IsGetNCChangesPermissionGranted):
+            # DS-Replication-Get-Changes can be used by NT AUTHORITY\SYSTEM without touching 
+            # passwords (with DS-Replication-Get-Changes-All) and
+            # sensitive data (with DS-Replication-Get-Changes-In-Filtered-Set)
+            # so we need to comment next line
+            # find_substr(datafield2, "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2") != null  or
             find_substr(datafield2, "89e95b76-444d-4c62-991a-0facbeda640c") != null 
         )
         # dcsync with local system account
