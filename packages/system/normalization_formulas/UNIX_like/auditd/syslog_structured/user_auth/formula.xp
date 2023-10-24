@@ -1,15 +1,16 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["USER_AUTH"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["USER_AUTH"] != null
 )
 
 $kv_main = keyvalue($items["USER_AUTH"][0], " ", "=", "'")
 $kv_msg = keyvalue($kv_main['msg'], ' ', '=', '"')
 
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -41,13 +42,28 @@ if ($kv_main["auid"] != "4294967295") then
     subject.account.session_id = $kv_main["ses"]
 endif
 
+# Декодируем HEX, если требуется
+$uid_en = strip($kv_main["UID"], '"', '"')
+if $uid_en == $kv_main["UID"] then
+    $uid_en = hex_to_string($kv_main["UID"])
+endif
+
+$uid_list = csv($uid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
+endif
+
+$id_list = csv($id_en, "@", "")
+
+# Декодируем HEX, если требуется
 $acct = strip($kv_msg["acct"], '"', '"')
 if $acct == $kv_msg["acct"] then
     $acct = hex_to_string($kv_msg["acct"])
 endif
 
-$uid_list = csv(strip($kv_main["UID"], '"', '"'), "@", "")
-$id_list = csv(strip($kv_main["ID"], '"', '"'), "@", "")
 $acct_list = csv($acct, "@", "")
 
 if $kv_msg["op"] == "PAM:authentication" then  # Pluggable Authentication Modules
@@ -82,22 +98,21 @@ if $kv_msg["op"] == "PAM:authentication" then  # Pluggable Authentication Module
     endif
     
 elif ($process_name == "sshd") then  # OpenSSH
+    $openssh_logon_types = ["password", "challenge-response", "pubkey", "hostbased", "gssapi", "none", "pubkey_auth", "hostbased_auth"]
+    $openssh_reasons = ["maxtries exceeded", "root denied", "success", "invalid user", "connection closed", "connection abandoned", "unknown"]
+
     subject.account.name = $acct_list[0]
     subject.account.domain = $acct_list[1]
     
-    if (in_list(["password", "challenge-response", "pubkey", "hostbased", "gssapi", "none", "pubkey_auth", "hostbased_auth"], $kv_msg["op"])) then
+    if in_list($openssh_logon_types, $kv_msg["op"]) then
         datafield7 = $kv_msg["op"]  # logon_type (text)
     endif
     
-    if (in_list(["maxtries exceeded", "root denied", "success", "invalid user", "connection closed", "connection abandoned", "unknown"], $kv_msg["op"])) then
+    if in_list($openssh_reasons, $kv_msg["op"]) then
         reason = $kv_msg["op"]
     else
         reason = $kv_msg["res"]
     endif
-endif
-
-if ($kv_msg["res"] == "success") and in_list(["login", "elevate"], action) then
-    subject.state = "authenticated"
 endif
 
 if in_list(["su", "sudo"], $process_name) then
@@ -113,7 +128,7 @@ else
 endif
 
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 if action == "login" then
@@ -158,6 +173,8 @@ if $node != "" then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
             $dst_ip = $node
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -182,4 +199,3 @@ if logon_auth_method == "remote" then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_user_auth"
-

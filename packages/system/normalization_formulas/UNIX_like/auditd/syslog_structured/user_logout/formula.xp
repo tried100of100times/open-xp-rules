@@ -1,9 +1,9 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["USER_LOGOUT"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["USER_LOGOUT"] != null
 )
 
 $kv_main = keyvalue($items["USER_LOGOUT"][0], " ", "=", "'")
@@ -14,6 +14,7 @@ action = "logout"
 object = "system"
 
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -49,16 +50,37 @@ endsubformula
 
 submessage("TEXT", "parse_enriched", $items["USER_LOGOUT"][0])
 
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
+endif
+
+$id_list = csv($id_en, "@", "")
+
+# Декодируем HEX, если требуется
 $acct = strip($kv_msg["acct"], '"', '"')
 if $acct == $kv_msg["acct"] then
     $acct = hex_to_string($kv_msg["acct"])
 endif
 
-$id_list = csv(strip($kv_main["ID"], '"', '"'), "@", "")
 $acct_list = csv($acct, "@", "")
 
-$uid_1_list = csv($uid_1, "@", "")
-$uid_2_list = csv($uid_2, "@", "")
+# Декодируем HEX, если требуется
+$uid_1_en = strip($uid_1, '"', '"')
+if $uid_1_en == $uid_1 then
+    $uid_1_en = hex_to_string($uid_1)
+endif
+
+$uid_1_list = csv($uid_1_en, "@", "")
+
+# Декодируем HEX, если требуется
+$uid_2_en = strip($uid_2, '"', '"')
+if $uid_2_en == $uid_2 then
+    $uid_2_en = hex_to_string($uid_2)
+endif
+
+$uid_2_list = csv($uid_2_en, "@", "")
 
 if ($kv_msg["id"] != null) then  # OpenSSH & Login Terminal
     subject.account.id = $kv_msg["id"]
@@ -105,7 +127,7 @@ if action == "logout" then
 endif
 
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
@@ -130,6 +152,8 @@ if $node != "" then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
             $dst_ip = $node
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -154,4 +178,3 @@ if logon_auth_method == "remote" then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_user_logout"
-

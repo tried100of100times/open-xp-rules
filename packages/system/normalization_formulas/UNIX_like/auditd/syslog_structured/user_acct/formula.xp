@@ -1,15 +1,16 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["USER_ACCT"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["USER_ACCT"] != null
 )
 
 $kv_main = keyvalue($items["USER_ACCT"][0], " ", "=", "'")
 $kv_msg = keyvalue($kv_main['msg'], ' ', '=', '"')
 
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -25,9 +26,19 @@ if (($kv_main["auid"] != "4294967295") and ($process_name == "groupmod")) or ($p
     subject = "account"
 endif
 
-if ($process_name == "groupmod") then
+# pam_tally2 & pam_faillock
+if (substr($kv_main['msg'], 0, 10) == "pam_tally2") or (substr($kv_main['msg'], 0, 14) == "faillock reset") then
+    $is_pam = true
+    $msg = "op=" + $kv_main['msg']
+    $kv_msg = keyvalue($msg, ' ', '=', '"')
+    
+    action = "modify"
+    object = "account"
+# groupmod & gpasswd
+elif in_list(["groupmod", "gpasswd"], $process_name) then
     action = "modify"
     object = "user_group"
+# su & sudo
 elif (in_list(["su", "sudo"], $process_name)) then
     action = "elevate"
     object = "account"
@@ -37,52 +48,135 @@ else
 endif
 
 if ($process_name == "groupmod") then
-    if ($kv_msg["res"] == "success") and (find_substr($kv_msg["op"], "changing") != null) then
+    if ($kv_msg["res"] == "success") and (substr($kv_msg["op"], 0, 8) == "changing") then
         status = "ongoing"
-    elif ($kv_msg["res"] == "success") and (find_substr($kv_msg["op"], "modifying") != null) then
+    elif ($kv_msg["res"] == "success") and (substr($kv_msg["op"], 0, 9) == "modifying") then
         status = "success"
-    elif ($kv_msg["res"] == "failed") then
+    else
+        status = "failure"
+    endif
+elif ($process_name == "gpasswd") then
+    if $kv_msg["res"] == "success" then
+        status = "success"
+    else
         status = "failure"
     endif
 elif ($kv_msg["res"] == "success") then
-    status = "ongoing"
+    status = if $is_pam then "success" else "ongoing" endif
 else
     status = "failure"
 endif
 
-subformula "parse_op"
+subformula "parse_op_groupmod"
     TEXT = 'changing {LITERAL+}; group {$group_name=LITERAL+}/{$group_id=NUMBER}'
 endsubformula
 
-subformula "parse_op"
+subformula "parse_op_groupmod"
     TEXT = 'changing {LITERAL+}; group {$group_name=REST}'
 endsubformula
 
-subformula "parse_op"
+subformula "parse_op_groupmod"
     TEXT = '{REST}'
 endsubformula
 
+subformula "parse_op_gpasswd"
+    TEXT = '{STRING*} failed to add user {$added_user=STRING*} to group {REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = 'user {$added_user=STRING*} added by {STRING*} to group {REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = '{STRING*} failed to remove user {$removed_user=STRING*} from group {REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = 'user {$removed_user=STRING*} removed by {STRING*} from group {REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = '{STRING*} failed to set the administrators of group {STRING*} to {$admins_suf=REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = 'administrators of group {STRING*} set by {STRING*} to {$admins_suf=REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = '{STRING*} failed to set the members of group {STRING*} to {$members_suf=REST}'
+endsubformula
+
+subformula "parse_op_gpasswd"
+    TEXT = 'members of group {STRING*} set by {STRING*} to {$members_suf=REST}'
+endsubformula
+
+subformula "parse_op_gpasswd_suf"
+    TEXT = '{$output=STRING*} in /etc/{REST}'
+endsubformula
+
+subformula "parse_op_gpasswd_suf"
+    TEXT = ': Permission denied'
+endsubformula
+
+subformula "parse_op_gpasswd_suf"
+    TEXT = '{$output=STRING*}'
+endsubformula
+
+subformula "parse_enriched_pam"
+    TEXT = '{STRING+} res={WORD}\' UID={$uid_1=LITERAL*} AUID={$auid=LITERAL*} UID={$uid_2=LITERAL*}'
+endsubformula
+
+subformula "parse_enriched_pam"
+    TEXT = '{REST}'
+endsubformula
+
+# Декодируем HEX, если требуется
+$auid_en = strip($kv_main["AUID"], '"', '"')
+if $auid_en == $kv_main["AUID"] then
+    $auid_en = hex_to_string($kv_main["AUID"])
+endif
+
+$auid_list = csv($auid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$uid_en = strip($kv_main["UID"], '"', '"')
+if $uid_en == $kv_main["UID"] then
+    $uid_en = hex_to_string($kv_main["UID"])
+endif
+
+$uid_list = csv($uid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
+endif
+
+$id_list = csv($id_en, "@", "")
+
+# Декодируем HEX, если требуется
 $acct = strip($kv_msg["acct"], '"', '"')
 if $acct == $kv_msg["acct"] then
     $acct = hex_to_string($kv_msg["acct"])
 endif
 
-$auid_list = csv(strip($kv_main["AUID"], '"', '"'), "@", "")
-$uid_list = csv(strip($kv_main["UID"], '"', '"'), "@", "")
-$id_list = csv(strip($kv_main["ID"], '"', '"'), "@", "")
 $acct_list = csv($acct, "@", "")
 
+# PAM & su/sudo
 if in_list(["su", "sudo"], $process_name) then
     subject.account.id = $kv_main["uid"]
     subject.account.name = $uid_list[0]
     subject.account.domain = $uid_list[1]
 
-elif $process_name == "groupmod" then
+# groupmod, gpasswd, pam_tally2, pam_faillock
+elif in_list(["groupmod", "gpasswd"], $process_name) or $is_pam then
     subject.account.id = $kv_main["auid"]
     subject.account.name = $auid_list[0]
     subject.account.domain = $auid_list[1]
     subject.account.privileges = $kv_main["uid"]
 
+# PAM & login utilites
 else
     if ($kv_msg["id"] != null) then
         subject.account.id = $kv_msg["id"]
@@ -94,18 +188,41 @@ else
     endif
 endif
 
-if (action == "modify") then
+if action == "modify" then
     subject.account.session_id = $kv_main["ses"]
 endif
 
-if ($kv_msg["res"] == "success") and in_list(["login", "elevate"], action) then
-    subject.state = "was-authorized"
-endif
+# Pluggable Authentication Modules
+if $kv_msg["op"] == "PAM:accounting" then
+    if $process_name == "su" then
+        object.account.name = $acct_list[0]
+        object.account.domain = $acct_list[1]
+    endif
 
-if ($process_name == "groupmod") then  # shadow-utils groupmod
+elif $is_pam then
+    if $kv_msg["uid"] != "all" then
+        submessage("TEXT", "parse_enriched_pam", $items["USER_ACCT"][0])
+        
+        # Декодируем HEX, если требуется
+        $uid_2_en = strip($uid_2, '"', '"')
+        if $uid_2_en == $uid_2 then
+            $uid_2_en = hex_to_string($uid_2)
+        endif
+
+        $uid_2_list = csv($uid_2_en, "@", "")
+        
+        object.account.name = $uid_2_list[0]
+        object.account.domain = $uid_2_list[1]
+    endif
+    
+    object.account.id = coalesce($kv_msg["uid"], $kv_msg["id"])
+    object.property = "failed_logins_counter"
+
+# groupmod
+elif $process_name == "groupmod" then
     $op_csv = csv($kv_msg['op'], ', ', '')
 
-    submessage("TEXT", "parse_op", $op_csv[0])
+    submessage("TEXT", "parse_op_groupmod", $op_csv[0])
 
     $property = ""
     $value = ""
@@ -177,17 +294,52 @@ if ($process_name == "groupmod") then  # shadow-utils groupmod
     object.value = if $value != "" then strip($value, " | ", "") else null endif
     object.new_value = if $new_value != "" then strip($new_value, " | ", "") else null endif
 
-elif ($process_name == "su") then
-    object.account.name = $acct_list[0]
-    object.account.domain = $acct_list[1]
+# gpasswd
+elif $process_name == "gpasswd" then
+    object.name = $acct
+    
+    submessage("TEXT", "parse_op_gpasswd", $kv_msg['op'])
+    
+    if $admins_suf != null then
+        submessage("TEXT", "parse_op_gpasswd_suf", $admins_suf)
+        
+        if $output != null then
+            object.property = "group_admins"
+            object.new_value = $output
+        endif
+    elif $members_suf != null then
+        submessage("TEXT", "parse_op_gpasswd_suf", $members_suf)
+        
+        if $output != null then
+            object.property = "members"
+            object.new_value = $output
+        endif
+    elif $added_user != null then
+        object.property = "added_user"
+        object.new_value = $added_user
+    elif $removed_user != null then
+        object.property = "removed_user"
+        object.value = $removed_user
+    endif
 endif
 
-if in_list(["su", "sudo", "groupmod"], $process_name) then
+# account elevation & group management
+if in_list(["su", "sudo", "groupmod", "gpasswd"], $process_name) or $is_pam then
     subject.process.fullpath = $process_fullpath
     subject.process.name = $process_name
     subject.process.path = $process_path
     subject.process.id = $kv_main["pid"]
+    
+    if in_list(["su", "sudo"], $process_name) then
+        subject.state = $kv_msg["op"]
+    else
+        object.state = $kv_msg["op"]
+    endif
+
+# login events
 else
+    subject.state = $kv_msg["op"]
+
     object.process.fullpath = $process_fullpath
     object.process.name = $process_name
     object.process.path = $process_path
@@ -211,18 +363,16 @@ if action == "login" then
 endif
 
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
-
-reason = $kv_msg["op"]
 
 time = epoch_to_datetime(number($timestamp))
 msgid = "USER_ACCT"
 importance = "low"
 
-if ($process_name == "groupmod") then
+if in_list(["groupmod", "gpasswd"], $process_name) then
     category.generic = "Group"
     category.high = "Users And Rights Management"
     category.low = "Manipulation"
@@ -246,6 +396,8 @@ if $node != "" then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
             $dst_ip = $node
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -270,4 +422,3 @@ if logon_auth_method == "remote" then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_user_acct"
-

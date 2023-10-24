@@ -1,9 +1,9 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["ADD_USER"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["ADD_USER"] != null
 )
 
 $kv_main = keyvalue($items["ADD_USER"][0], " ", "=", "'")
@@ -13,33 +13,61 @@ if $kv_main["auid"] != "4294967295" then
     subject = "account"
 endif
 
-action = "create"
-object = "account"
+$op = replace($kv_msg["op"], " ", "-")
+$useradd_group_ops = ["adding user to group", "adding user to shadow group", "unlocking group file", "unlocking gshadow file", "unlocking subordinate group file"]
 
-if ($kv_msg["op"] == "adding user") or ($kv_msg["op"] == "add-user") then
+# useradd
+if in_list($useradd_group_ops, $op) then
+    action = "modify"
+    object = "user_group"
+    
     if $kv_msg["res"] == "success" then
         status = "success"
     else
         status = "failure"
     endif
+
+# usermod & userdel
+elif $kv_msg["op"] == "removing SELinux user mapping" then
+    action = "remove"
+    object = "account"
+    status = "failure"
+
+# useradd
 else
-    if $kv_msg["res"] == "success" then
-        status = "ongoing"
-        object.state = $kv_msg["op"]
+    action = "create"
+    object = "account"
+    
+    if in_list(["adding user", "add-user"], $kv_msg["op"]) then
+        if $kv_msg["res"] == "success" then
+            status = "success"
+        else
+            status = "failure"
+        endif
     else
-        status = "failure"
+        if $kv_msg["res"] == "success" then
+            status = "ongoing"
+        else
+            status = "failure"
+        endif
     endif
 endif
 
-$acct = strip($kv_msg["acct"], '"', '"')
-if $acct == $kv_msg["acct"] then
-    $acct = hex_to_string($kv_msg["acct"])
+# Декодируем HEX, если требуется
+$auid_en = strip($kv_main["AUID"], '"', '"')
+if $auid_en == $kv_main["AUID"] then
+    $auid_en = hex_to_string($kv_main["AUID"])
 endif
 
-$auid_list = csv(strip($kv_main["AUID"], '"', '"'), "@", "")
-$uid_list = csv(strip($kv_main["UID"], '"', '"'), "@", "")
-$id_list = csv(strip($kv_main["ID"], '"', '"'), "@", "")
-$acct_list = csv($acct, "@", "")
+$auid_list = csv($auid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$uid_en = strip($kv_main["UID"], '"', '"')
+if $uid_en == $kv_main["UID"] then
+    $uid_en = hex_to_string($kv_main["UID"])
+endif
+
+$uid_list = csv($uid_en, "@", "")
 
 if $kv_main["auid"] != "4294967295" then
     subject.account.name = $auid_list[0]
@@ -57,6 +85,7 @@ subject.account.session_id = $kv_main["ses"]
 subject.account.privileges = $kv_main["uid"]
 
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -73,28 +102,54 @@ subject.process.name = $process_name
 subject.process.path = $process_path
 subject.process.id = $kv_main["pid"]
 
-if ($kv_msg["id"] != null) then
-    object.account.id = $kv_msg["id"]
-    object.account.name = $id_list[0]
-    object.account.domain = $id_list[1]
-else
-    object.account.name = $acct_list[0]
-    object.account.domain = $acct_list[1]
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
 endif
 
+$id_list = csv($id_en, "@", "")
+
+# Декодируем HEX, если требуется
+$acct = strip($kv_msg["acct"], '"', '"')
+if $acct == $kv_msg["acct"] then
+    $acct = hex_to_string($kv_msg["acct"])
+endif
+
+$acct_list = csv($acct, "@", "")
+
+if object == "account" then
+    if ($kv_msg["id"] != null) then
+        object.account.id = $kv_msg["id"]
+        object.account.name = $id_list[0]
+        object.account.domain = $id_list[1]
+    else
+        object.account.name = $acct_list[0]
+        object.account.domain = $acct_list[1]
+    endif
+else
+    object.property = "added_user"
+    object.new_value = coalesce($id_list[0], $acct_list[0], $kv_msg["id"])
+endif
+
+object.state = $kv_msg["op"]
+
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
-
-reason = $kv_msg["op"]
 
 time = epoch_to_datetime(number($timestamp))
 msgid = "ADD_USER"
 importance = "low"
 
-category.generic = "Account"
+if object == "account" then
+    category.generic = "Account"
+else
+    category.generic = "Group"
+endif
+
 category.high = "Users And Rights Management"
 category.low = "Manipulation"
 
@@ -107,6 +162,8 @@ if $node != "" then
         if (in_subnet($node, "127.0.0.0/8") == False and $node != "::1") then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -130,4 +187,3 @@ if (event_src.ip == null) and ($kv_msg["addr"] != "?") then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_add_user"
-

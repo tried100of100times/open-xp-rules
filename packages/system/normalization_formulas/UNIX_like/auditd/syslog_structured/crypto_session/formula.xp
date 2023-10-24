@@ -1,9 +1,9 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["CRYPTO_SESSION"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["CRYPTO_SESSION"] != null
 )
 
 $kv_main = keyvalue($items["CRYPTO_SESSION"][0], " ", "=", "'")
@@ -87,6 +87,8 @@ if $node != "" then
         if (in_subnet($node, "127.0.0.0/8") == False and $node != "::1") then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")

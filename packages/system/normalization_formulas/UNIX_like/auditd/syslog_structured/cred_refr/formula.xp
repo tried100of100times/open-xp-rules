@@ -1,19 +1,20 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["CRED_REFR"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["CRED_REFR"] != null
 )
 
 $kv_main = keyvalue($items["CRED_REFR"][0], " ", "=", "'")
 $kv_msg = keyvalue($kv_main['msg'], ' ', '=', '"')
 
-if $kv_msg["op"] != "PAM:setcred" then  
+if $kv_msg["op"] != "PAM:setcred" then  # Неизвестные кейсы
     drop
 endif
     
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -41,17 +42,32 @@ if ($kv_main["ses"] != "4294967295") then
     subject.account.session_id = $kv_main["ses"]
 endif
 
+# Декодируем HEX, если требуется
+$auid_en = strip($kv_main["AUID"], '"', '"')
+if $auid_en == $kv_main["AUID"] then
+    $auid_en = hex_to_string($kv_main["AUID"])
+endif
+
+$auid_list = csv($auid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
+endif
+
+$id_list = csv($id_en, "@", "")
+
+# Декодируем HEX, если требуется
 $acct = strip($kv_msg["acct"], '"', '"')
 if $acct == $kv_msg["acct"] then
     $acct = hex_to_string($kv_msg["acct"])
 endif
 
-$auid_list = csv(strip($kv_main["AUID"], '"', '"'), "@", "")
-$id_list = csv(strip($kv_main["ID"], '"', '"'), "@", "")
 $acct_list = csv($acct, "@", "")
 
 if ($process_name == "sudo") then
-    
+    # По отдельному событию нельзя с уверенностью сказать, кто выполняет sudo
     object.account.name = $acct_list[0]
     object.account.domain = $acct_list[1]
     
@@ -110,7 +126,7 @@ if action == "login" then
 endif
 
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
@@ -141,6 +157,8 @@ if $node != "" then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
             $dst_ip = $node
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -165,4 +183,3 @@ if logon_auth_method == "remote" then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_cred_refr"
-

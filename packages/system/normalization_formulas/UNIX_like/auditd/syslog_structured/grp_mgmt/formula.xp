@@ -1,9 +1,9 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["GRP_MGMT"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["GRP_MGMT"] != null
 )
 
 $kv_main = keyvalue($items["GRP_MGMT"][0], " ", "=", "'")
@@ -13,10 +13,8 @@ if $kv_main["auid"] != "4294967295" then
     subject = "account"
 endif
 
-action = "modify"
-object = "user_group"
-
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -28,16 +26,61 @@ if $kv_msg["exe"] != "?" then
     $process_path = strip($exe, "", $process_name)
 endif
 
-if ($kv_msg["res"] == "success") and ($process_name == "groupmod") and find_substr($kv_msg["op"], "changing-") != null then
+# gpasswd
+if $process_name == "gpasswd" then
+    action = "modify"
+    status = if $kv_msg["res"] == "success" then "success" else "failure" endif
+
+# groupadd
+elif $process_name == "groupadd" then
+    action = "create"
     status = "ongoing"
-elif $kv_msg["res"] == "success"  then
+
+# groupdel
+elif $process_name == "groupdel" then
+    action = "remove"
+    status = if $kv_msg["res"] == "success" then "ongoing" else "failure" endif
+
+# groupmod
+elif $process_name == "groupmod" then
+    action = "modify"
+    
+    if ($kv_msg["res"] == "success") and find_substr($kv_msg["op"], "changing-") != null then
+        status = "ongoing"
+    elif $kv_msg["res"] == "success"  then
+        status = "success"
+    else
+        status = "failure"
+    endif
+
+# userdel
+elif $process_name == "userdel" then
+    action = "remove"
     status = "success"
-else
-    status = "failure"
+
+# usermod
+elif $process_name == "usermod" then
+    action = "modify"
+    status = "success"
 endif
 
-$auid_list = csv(strip($kv_main["AUID"], '"', '"'), "@", "")
-$uid_list = csv(strip($kv_main["UID"], '"', '"'), "@", "")
+object = "user_group"
+
+# Декодируем HEX, если требуется
+$auid_en = strip($kv_main["AUID"], '"', '"')
+if $auid_en == $kv_main["AUID"] then
+    $auid_en = hex_to_string($kv_main["AUID"])
+endif
+
+$auid_list = csv($auid_en, "@", "")
+
+# Декодируем HEX, если требуется
+$uid_en = strip($kv_main["UID"], '"', '"')
+if $uid_en == $kv_main["UID"] then
+    $uid_en = hex_to_string($kv_main["UID"])
+endif
+
+$uid_list = csv($uid_en, "@", "")
 
 if $kv_main["auid"] != "4294967295" then
     subject.account.name = $auid_list[0]
@@ -58,8 +101,6 @@ subject.process.fullpath = $process_fullpath
 subject.process.name = $process_name
 subject.process.path = $process_path
 subject.process.id = $kv_main["pid"]
-
-object.state = $kv_msg["op"]
 
 $property = ""
 $value = ""
@@ -85,20 +126,42 @@ if ($process_name == "groupmod") and (find_substr($kv_msg["op"], "changing") != 
     object.value = join($list, '|')
 endif
 
-object.name = $kv_msg["grp"]
-object.id = $kv_msg["gid"]
+# Декодируем HEX, если требуется
+$id_en = strip($kv_main["ID"], '"', '"')
+if $id_en == $kv_main["ID"] then
+    $id_en = hex_to_string($kv_main["ID"])
+endif
+
+# Декодируем HEX, если требуется
+$acct = strip($kv_msg["acct"], '"', '"')
+if $acct == $kv_msg["acct"] then
+    $acct = hex_to_string($kv_msg["acct"])
+endif
+
+if ($process_name == "gpasswd") and ($kv_msg["op"] == "set-admins-of-group") then
+    $property = "group_admins"
+    $new_value = $acct
+endif
+
+if in_list(["groupadd", "groupdel"], $process_name) then
+    object.name = coalesce($id_en, $acct)
+    object.id = $kv_msg["id"]
+else
+    object.name = $kv_msg["grp"]
+    object.id = $kv_msg["gid"]
+endif
 
 object.property = if $property != "" then strip($property, " | ", "") else null endif
 object.value = if $value != "" then strip($value, " | ", "") else null endif
 object.new_value = if $new_value != "" then strip($new_value, " | ", "") else null endif
 
+object.state = $kv_msg["op"]
+
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
-
-reason = $kv_msg["op"]
 
 time = epoch_to_datetime(number($timestamp))
 msgid = "GRP_MGMT"
@@ -117,6 +180,8 @@ if $node != "" then
         if (in_subnet($node, "127.0.0.0/8") == False and $node != "::1") then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -140,4 +205,3 @@ if (event_src.ip == null) and ($kv_msg["addr"] != "?") then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_grp_mgmt"
-

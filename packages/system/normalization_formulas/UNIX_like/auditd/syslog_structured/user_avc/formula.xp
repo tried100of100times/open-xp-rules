@@ -1,15 +1,16 @@
 JSON = ''
 COND = (
-    $eventid != null and
-    $node != null and
-    $timestamp != null and
-    $items["USER_AVC"] != null
+    $eventid != null
+    and $node != null
+    and $timestamp != null
+    and $items["USER_AVC"] != null
 )
 
 $kv_main = keyvalue($items["USER_AVC"][0], " ", "=", "'")
 $kv_msg = keyvalue($kv_main["msg"], " ", "=", '"')
 
 if $kv_msg["exe"] != "?" then
+    # Декодируем HEX, если требуется
     $exe = strip($kv_msg["exe"], '"', '"')
     if $exe == $kv_msg["exe"] then
         $exe = hex_to_string($kv_msg["exe"])
@@ -91,7 +92,6 @@ if $kv_msg["apparmor"] == null then
             if $kv_msg_se["auid"] != "n/a" then
                 subject.account.id = $kv_msg_se["auid"]
                 
-                
                 if ($kv_main["UID"] != null) then
                     submessage("TEXT", "parse_enriched", $items["USER_AVC"][0])
 
@@ -157,7 +157,7 @@ else
 endif
 
 if $kv_msg["terminal"] != "?" then
-    logon_service = replace(strip($kv_msg["terminal"], "/dev/", ""), "", "/")
+    logon_service = strip($kv_msg["terminal"], "/dev/", "")
 endif
 
 chain_id = $eventid  # AuditD Event ID
@@ -181,6 +181,8 @@ if $node != "" then
         if (in_subnet($node, "127.0.0.0/8") == False and $node != "::1") then
             event_src.ip = $node
             labels = "node_contains_ext_ip"
+        else
+            event_src.ip = recv_ipv4
         endif
     else
         $first_dot = find_substr($node, ".")
@@ -204,4 +206,3 @@ if event_src.ip == null and $kv_msg["addr"] != "?" then
 endif
 
 id = "PT_UNIX_like_auditd_syslog_structured_user_avc"
-
