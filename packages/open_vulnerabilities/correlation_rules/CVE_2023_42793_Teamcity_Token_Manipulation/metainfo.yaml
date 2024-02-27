@@ -13,7 +13,7 @@ ExpertContext:
         - https://nvd.nist.gov/vuln/detail/CVE-2023-42793
         - https://github.com/H454NSec/CVE-2023-42793
         - https://exploit-notes.hdks.org/exploit/web/teamcity-pentesting/
-ObjectId: LOC-CR-723173698
+ObjectId: SEC-CR-723173698
 ContentRelations:
     Implements:
         ATTACK:

@@ -14,7 +14,7 @@ ExpertContext:
           EventID:
               - 1
               - 7
-ObjectId: LOC-CR-133155613
+ObjectId: SEC-CR-133155613
 ContentRelations:
     Implements:
         ATTACK:

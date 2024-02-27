@@ -14,7 +14,7 @@ ExpertContext:
         - Vulnerability scanners, misconfigured systems, remote administration tools, VPN terminators, multiuser systems like Citrix server farms
     Improvements:
         - Add events a lot of failure 4668 before correlation rule kerberos_pwd_spraying_4771 and add events success event 4688
-ObjectId: LOC-CR-155929458
+ObjectId: SEC-CR-155929458
 EventDescriptions:
     - Criteria: correlation_name = "Kerberos_pwd_spraying"
       LocalizationId: corrname_kerberos_pwd_spraying

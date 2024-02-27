@@ -23,7 +23,7 @@ ExpertContext:
           EventID:
               - 7045
               - 5145
-ObjectId: LOC-CR-180323302
+ObjectId: SEC-CR-180323302
 EventDescriptions:
     - Criteria: correlation_name = "Named_Pipe_Impersonation_PrivEsc"
       LocalizationId: corrname_Named_Pipe_Impersonation_PrivEsc

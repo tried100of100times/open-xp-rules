@@ -8,4 +8,4 @@ ExpertContext:
         - Sergey Scherbakov
     Usecases:
         - Раскладывает по полям имя/id УЗ и имя токена из запроса на токен к REST API TeamCity
-ObjectId: LOC-ER-892365548
+ObjectId: SEC-ER-892365548

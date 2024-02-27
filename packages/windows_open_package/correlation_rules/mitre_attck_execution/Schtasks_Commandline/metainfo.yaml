@@ -18,7 +18,7 @@ ExpertContext:
           EventID:
               - 4103
               - 4104
-ObjectId: LOC-CR-152436010
+ObjectId: SEC-CR-152436010
 EventDescriptions:
     - Criteria: correlation_name = "Schtasks_Commandline"
       LocalizationId: corrname_Schtasks_Commandline

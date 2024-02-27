@@ -12,7 +12,7 @@ ExpertContext:
         - Provider: Microsoft-Windows-Sysmon
           EventID:
               - 1
-ObjectId: LOC-CR-655783268
+ObjectId: SEC-CR-655783268
 EventDescriptions:
     - Criteria: correlation_name = "ProxyNotShell" and src.ip = src.host
       LocalizationId: corrname_ProxyNotShell

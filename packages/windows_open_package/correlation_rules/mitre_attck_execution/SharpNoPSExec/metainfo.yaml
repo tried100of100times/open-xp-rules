@@ -16,7 +16,7 @@ ExpertContext:
               - 4657
     Usecases:
         - Атакующие могут модифицировать путь к исполняемому файлу существующей службы Windows для запуска ВПО (например с помощью SharpNoPSExec)
-ObjectId: LOC-CR-249739163
+ObjectId: SEC-CR-249739163
 ContentRelations:
     Implements:
         ATTACK:

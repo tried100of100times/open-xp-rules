@@ -17,7 +17,7 @@ ExpertContext:
         - https://github.com/b1tg/CVE-2023-38831-winrar-exploit
     Usecases:
         - WinRAR до версии 6.23 позволяет злоумышленникам выполнять произвольный код, когда пользователь пытается просмотреть безопасный файл в ZIP-архиве.
-ObjectId: ESC-CR-204012915
+ObjectId: SEC-CR-204012915
 ContentRelations:
     Implements:
         ATTACK:

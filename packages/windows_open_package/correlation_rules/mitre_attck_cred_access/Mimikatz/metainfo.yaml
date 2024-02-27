@@ -15,7 +15,7 @@ ExpertContext:
         - Provider: Microsoft-Windows-Sysmon
           EventID:
               - 1
-ObjectId: LOC-CR-121752854
+ObjectId: SEC-CR-121752854
 EventDescriptions:
     - Criteria: correlation_name = "Mimikatz"
       LocalizationId: corrname_Mimikatz
