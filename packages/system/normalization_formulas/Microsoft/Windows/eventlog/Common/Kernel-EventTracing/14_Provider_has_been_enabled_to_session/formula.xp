@@ -20,8 +20,8 @@ datafield3 = strip($Data["ProviderName"], '{', '}') # ProviderGuid
 datafield4 = "enabled"
 datafield5 = $Data["MatchAnyKeyword"]               # MatchAnyKeyword
 datafield6 = $Data["MatchAllKeyword"]               # MatchAllKeyword
-datafield6 = $Data["EnableProperty"]                # EnableProperty
-datafield7 = $Data["Level"]                         # Level
+datafield7 = $Data["EnableProperty"]                # EnableProperty
+datafield8 = $Data["Level"]                         # Level
 
 event_src.vendor = "microsoft"
 event_src.title = "windows"
