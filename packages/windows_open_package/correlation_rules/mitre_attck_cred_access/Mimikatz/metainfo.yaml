@@ -1,7 +1,7 @@
 ContentAutoName: Mimikatz
 ExpertContext:
     Created: 15.05.2023
-    Updated: 19.05.2023
+    Updated: 13.06.2024
     Usecases:
         - Выявление запуска mimikatz.exe по подстроке mimikatz в пути к exe-файлу
         - Выявление запуска mimikatz.exe по метаданных файла (original_name, description, product, company)
@@ -15,6 +15,9 @@ ExpertContext:
         - Provider: Microsoft-Windows-Sysmon
           EventID:
               - 1
+    KnowledgeHolders: []
+    Falsepositives: []
+    Improvements: []
 ObjectId: SEC-CR-121752854
 EventDescriptions:
     - Criteria: correlation_name = "Mimikatz"
@@ -22,5 +25,5 @@ EventDescriptions:
 ContentRelations:
     Implements:
         ATTACK:
-            credential_access:
+            credential-access:
                 - T1003
