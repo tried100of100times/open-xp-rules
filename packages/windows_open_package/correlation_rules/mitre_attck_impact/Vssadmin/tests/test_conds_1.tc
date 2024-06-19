@@ -1,1 +1,1 @@
-expect 1 {"correlation_name": "Vssadmin"}
+expect 1 {"correlation_name":"Vssadmin"}

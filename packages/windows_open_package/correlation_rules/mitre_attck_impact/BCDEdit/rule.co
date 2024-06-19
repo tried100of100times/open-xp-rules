@@ -6,7 +6,7 @@ event Process_Start:
         and event_src.title == "sysmon"
         and msgid == "1"
         and (
-            match(lower(object.process.cmdline), "*bcdedit.exe*/set*bootstatuspolicy*")
+            match(lower(object.process.cmdline), "*bcdedit.exe*/set*bootstatuspolicy*ignoreallfailures*")
             or match(lower(object.process.cmdline), "*bcdedit.exe*/set*recoveryenabled*no*")
         )
     }
