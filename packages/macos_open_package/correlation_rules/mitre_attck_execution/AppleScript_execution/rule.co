@@ -1,18 +1,18 @@
-event EventName:
+event AppleScript:
     key:
         event_src.host
     filter {
         filter::NotFromCorrelator()
-        and filter::CheckWL_Specific_Only("MacOS_AppleScript", )
+        and event_src.title == "edr"
+        and action =="execute"
+        and msgid == "9"
+        and regex(lower(object.process.cmdline), "\.*\.app", 0) != null
+        and regex(lower(object.process.cmdline), "\.*applet", 0) != null
     }
 
-rule MacOS_AppleScript: EventName
+rule AppleScript_Execution: AppleScript
 
-    init {
-        $labels = "w_auto|CheckWL_Specific_Only"
-    }
-
-    on EventName {
+    on AppleScript {
         $status = status
 
         $subject.account.name = subject.account.name
@@ -88,27 +88,23 @@ rule MacOS_AppleScript: EventName
 		$datafield18 = datafield18
 
         # other
-        $alert.context = 
-        $alert.regex_match = 
-
         $reason = reason
     }
 
 emit {
-    $correlation_type = ""
-
-    $importance = ""
+    $correlation_type = "incident"
+    $importance = "high"
 
     $subject = "process"
     $action = "execute"
     $object = "process"
 
-    $category.generic = ""
-    $category.high = ""
-    $category.low = ""
+    $category.generic = "Attacks & Recon"
+    $category.high = "Execution"
+    $category.low = "Command and Scripting Interpreter: AppleScript"
 
     $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
     $incident.severity = $importance
-    $incident.category = "Undefined"
+    $incident.category = "SoftwareMalfunction"
     $incident.aggregation.timeout = 2h
 }
