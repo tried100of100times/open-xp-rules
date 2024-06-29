@@ -5,7 +5,6 @@ event Writing_nib_to_exctract_app:
         filter::NotFromCorrelator() 
         and id == "PT_Positive_Technologies_XDR_es_logger_file_data_writing"
         and regex(object.name,"\.nib$", 0) != null
-        and match(object.path,"/private/tmp/*")
         and match(object.path,"*/Contents/Resources/*")
     }
 
@@ -39,7 +38,7 @@ on Writing_nib_to_exctract_app {
     $object.path = object.path
     $object.fullpath = object.fullpath
 
-    $datafield1 =  regex(object.fullpath,"tmp\/([\w\d]+)\.app", 1) # Need for correlation - AppName
+    $datafield1 =  regex(object.fullpath,"\/([\w\d]+)\.app", 1) # Need for correlation - AppName
 }
 
 emit {

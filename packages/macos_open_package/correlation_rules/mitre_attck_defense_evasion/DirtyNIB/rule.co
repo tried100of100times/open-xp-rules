@@ -11,7 +11,6 @@ event Execute_vuln_app:
     filter {
         filter::NotFromCorrelator()
         and id == "PT_Positive_Technologies_XDR_es_logger_process_execution"
-        and match(object.process.path, "*/tmp/*")
     } 
 
 rule DirtyNIB: (Create_dirty_nib -> Execute_vuln_app) timer 5m
@@ -24,6 +23,12 @@ on Create_dirty_nib {
 }
 
 on Execute_vuln_app {
+
+    # checking that the paths match
+    if regex($object.path, "(.*)\.app", 1) != regex(object.process.fullpath, "(.*)\.app", 1) then
+        close
+    endif
+
     $subject = object
     $subject.process.hash = object.hash
 
