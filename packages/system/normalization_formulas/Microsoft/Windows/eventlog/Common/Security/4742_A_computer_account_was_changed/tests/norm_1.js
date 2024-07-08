@@ -17,6 +17,8 @@
     "object.account.domain": "ad2012",
     "object.account.id": "S-1-5-21-3725810923-1556733292-2669249330-1001",
     "object.account.name": "2012-dc$",
+    "object.new_value": "_ServicePrincipalNames:ldap/2012-DC.AD2012.ru/AD2012.ru\r\n\t\tldap/2012-DC.AD2012.ru\r\n\t\tldap/2012-DC\r\n\t\tldap/2012-DC.AD2012.ru/AD2012\r\n\t\tldap/187cbecd-8461-4d2d-a8fb-67b9838274c8._msdcs.AD2012.ru\r\n\t\tldap/2012-DC/AD2012\r\n\t\tE3514235-4B06-11D1-AB04-00C04FC2DCD2/187cbecd-8461-4d2d-a8fb-67b9838274c8/AD2012.ru\r\n\t\tHOST/2012-DC.AD2012.ru/AD2012.ru\r\n\t\tHOST/2012-DC.AD2012.ru\r\n\t\tHOST/2012-DC\r\n\t\tHOST/2012-DC.AD2012.ru/AD2012\r\n\t\tHOST/2012-DC/AD2012\r\n\t\tRPC/187cbecd-8461-4d2d-a8fb-67b9838274c8._msdcs.AD2012.ru\r\n\t\tRestrictedKrbHost/2012-DC\r\n\t\tRestrictedKrbHost/2012-DC.AD2012.ru\r\n\t\tGC/2012-DC.AD2012.ru/AD2012.ru\r\n\t\tDNS/2012-DC.AD2012.ru\r\n\t\tTERMSRV/2012-DC.AD2012.ru\r\n\t\tTERMSRV/2012-DC\r\n\t\tldap/2012-DC.AD2012.ru/DomainDnsZones.AD2012.ru\r\n\t\tldap/2012-DC.AD2012.ru/ForestDnsZones.AD2012.ru\r\n\t\tDfsr-12F9A27C-BF97-4787-9364-D31B6C55EB04/2012-DC.AD2012.ru\r\n\t\tSMTPSVC/2012-DC.AD2012.ru\r\n\t\tSMTPSVC/2012-DC\r\n\t\tE3514235-4B06-11D1-AB04-00C04FC2DCD2-ADAM/2012-DC:50000\r\n\t\tE3514235-4B06-11D1-AB04-00C04FC2DCD2-ADAM/2012-DC.AD2012.ru:50000\r\n\t\texchangeAB/2012-DC.AD2012.ru\r\n\t\texchangeAB/2012-DC\r\n\t\tWSMAN/2012-DC\r\n\t\tWSMAN/2012-DC.AD2012.ru\r\n\t\tldap/2012-DC:50000\r\n\t\tldap/2012-DC.AD2012.ru:50000;",
+    "object.property": "modified attributes",
     "status": "success",
     "subject": "account",
     "subject.account.domain": "ad2012",
