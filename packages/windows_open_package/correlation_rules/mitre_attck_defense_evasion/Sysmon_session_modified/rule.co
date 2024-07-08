@@ -15,8 +15,7 @@ event SysmonSession_MatchParamsModified:
         filter::NotFromCorrelator() and
         lower(event_src.title) == "microsoft-windows-kernel-eventtracing" and
         msgid == "14" and
-        in_list(["eventlog-microsoft-windows-sysmon-operational", "sysmondnsetwsession"], lower(object.name)) and
-        ($datafield5 != "18446744073709551615" or $datafield5 != "0")
+        ($datafield5 != "18446744073709551615" or $datafield6 != "0")
     }
 
  event SysmonSession_CmMatchParamsModified:
