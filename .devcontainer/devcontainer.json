@@ -10,11 +10,11 @@
 				"SecurityExpertsCommunity.xp"
 			],
 			"settings": {
-				"xpConfig.kbtBaseDirectory": "/tmp/xp-kbt"
+				"xpConfig.kbtBaseDirectory": "/home/vscode/xp-kbt"
 			}
 		}
 	},
-	"postCreateCommand": "wget $(curl -s https://api.github.com/repos/vxcontrol/xp-kbt/releases/latest | jq -r '.assets[] | select(.name | contains(\"debian\")).browser_download_url') -O /tmp/xp-kbt.zip && unzip -o /tmp/xp-kbt.zip -d /tmp/xp-kbt"
+	"postCreateCommand": "wget $(curl -s https://api.github.com/repos/vxcontrol/xp-kbt/releases/latest | jq -r '.assets[] | select(.name | contains(\"debian\")).browser_download_url') -O /home/vscode/xp-kbt.zip && unzip -o /home/vscode/xp-kbt.zip -d /home/vscode/xp-kbt"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
