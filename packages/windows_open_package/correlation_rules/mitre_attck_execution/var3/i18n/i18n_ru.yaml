@@ -1,0 +1,4 @@
+Description: 'Правило детектирует попытку выполнение JavaScript кода с помощью mshta.exe'
+EventDescriptions:
+  - LocalizationId: 'corrname_var3'
+    EventDescription: 'Процесс {object.proceess.name} попытался выполненить JavaScript код с помощью mshta.exe на узле {event_src.host}'

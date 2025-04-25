@@ -1,0 +1,4 @@
+Description: 'The rule detects an attempt to execute JavaScript code with mshta.exe'
+EventDescriptions:
+  - LocalizationId: 'corrname_var3'
+    EventDescription: 'Process {object.proceess.name} has tried to execute JavaScript code with mshta.exe  on host {event_src.host}'
