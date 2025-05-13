@@ -1,0 +1,4 @@
+Description: 'Правило детектирует попытку изменения регистра classes\\\\clsid\\{bcde0395-e52f-467c-8e3d-c4579291692e}\\\\inprocserver32'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_4_1'
+    EventDescription: 'Процесс {object.proceess.name} попытался изменить регистр classes\\\\clsid\\{bcde0395-e52f-467c-8e3d-c4579291692e}\\\\inprocserver32 на узле {event_src.host}'

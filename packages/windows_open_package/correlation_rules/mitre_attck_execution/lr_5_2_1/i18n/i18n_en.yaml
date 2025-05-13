@@ -1,0 +1,4 @@
+Description: 'The rule detects an attempt to modify the registry machine\\\\security\\\\policy\\\\secrets\\\\\$machine.acc'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_2_1'
+    EventDescription: 'The process {object.process.name } has tried to change the machine\\\\security\\\\policy\\\\secrets\\\\\$machine.acc register on the {event_src.host} node'

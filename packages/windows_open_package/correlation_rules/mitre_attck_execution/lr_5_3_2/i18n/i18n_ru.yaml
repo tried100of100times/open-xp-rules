@@ -1,0 +1,4 @@
+Description: 'Правило детектирует попытку изменения регистра software\\microsoft\\ieak\\grouppolicy\\pendinggpos\\'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_3_2'
+    EventDescription: 'Процесс {object.proceess.name} попытался изменить регистр software\\microsoft\\ieak\\grouppolicy\\pendinggpos\\ на узле {event_src.host}'

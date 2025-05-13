@@ -1,0 +1,4 @@
+Description: 'The rule detects an attempt to modify the registry software\\microsoft\\ieak\\grouppolicy\\pendinggpos\\'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_3_2'
+    EventDescription: 'The process {object.process.name } has tried to change the software\\microsoft\\ieak\\grouppolicy\\pendinggpos\\ register on the {event_src.host} node'

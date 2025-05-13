@@ -1,0 +1,4 @@
+Description: 'Правило детектирует попытку выполнить процесс с повышенными привелегиями используя teamviewer.exe'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_1_1'
+    EventDescription: 'Процесс {object.proceess.name} попытался выполнить процесс с повышенными привелегиями используя teamviewer.exe на узле {event_src.host}'
