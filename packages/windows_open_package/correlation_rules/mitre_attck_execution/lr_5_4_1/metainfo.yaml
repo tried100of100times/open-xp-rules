@@ -1,0 +1,25 @@
+ContentAutoName: lr_5_4_1
+ExpertContext:
+  Created: 09.05.2025
+  Updated: 09.05.2025
+  KnowledgeHolders:
+    - '[11_04]'
+  Usecases: []
+  Falsepositives: []
+  References:
+    - https://attack.mitre.org/techniques/T1112/
+  Improvements: []
+  DataSources:
+    - Provider: Microsoft-Windows-Sysmon
+      EventID:
+        - 12
+        - 13
+ObjectId: SEC-CR-200328754
+ContentRelations:
+  Implements:
+    ATTACK:
+      defense-evasion:
+        - T1112
+EventDescriptions:
+  - Criteria: correlation_name = "lr_5_4_1"
+    LocalizationId: corrname_lr_5_4_1

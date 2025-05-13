@@ -1,0 +1,4 @@
+Description: 'The rule detects an attempt to execute a process with elevated privileges using teamviewer.exe'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_1_1'
+    EventDescription: 'The process {object.process.name } has tried to execute a process with elevated privileges using teamviewer.exe on the {event_src.host} node'

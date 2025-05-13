@@ -1,0 +1,4 @@
+Description: 'Правило детектирует попытку изменения регистра machine\\\\security\\\\policy\\\\secrets\\\\\$machine.acc'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr_5_2_1'
+    EventDescription: 'Процесс {object.proceess.name} попытался изменить регистр machine\\\\security\\\\policy\\\\secrets\\\\\$machine.acc на узле {event_src.host}'
