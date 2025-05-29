@@ -1,0 +1,27 @@
+ContentAutoName: lr6_1_11_04_variant_1
+ExpertContext:
+  Created: 22.05.2025
+  Updated: 29.05.2025
+  KnowledgeHolders:
+    - '[06_04]'
+  Usecases: []
+  Falsepositives: []
+  References:
+    - https://attack.mitre.org/techniques/T1059/001/
+  Improvements: []
+  DataSources:
+    - Provider: Microsoft-Windows-Sysmon
+      EventID:
+        - 8
+    - Provider: Microsoft-Windows-PowerShell
+      EventID:
+        - 4104
+ObjectId: SEC-CR-196106075
+ContentRelations:
+  Implements:
+    ATTACK:
+      execution:
+        - T1059.001
+EventDescriptions:
+  - Criteria: correlation_name = "lr6_1_11_04_variant_1"
+    LocalizationId: corrname_lr6_1_11_04_variant_1

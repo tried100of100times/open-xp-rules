@@ -1,0 +1,4 @@
+Description: 'Обнаружена попытка запуска системного процесса {object.process.name} из пользовательской директории на узле {event_src.host}. Такое поведение может указывать на попытку обхода политики безопасности или исполнение вредоносного кода'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr6_1_11_04_variant_1'
+    EventDescription: 'На узле {event_src.host} зафиксирован запуск системного процесса {object.process.name} из пользовательской директории процессом {subject.process.name}.'

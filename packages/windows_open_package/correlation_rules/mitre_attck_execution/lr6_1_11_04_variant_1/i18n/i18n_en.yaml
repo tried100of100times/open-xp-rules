@@ -1,0 +1,4 @@
+Description: 'A system process {object.process.name} was executed from a user directory on host {event_src.host}. This behavior may indicate an attempt to bypass security policies or execute malicious code.'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr6_1_11_04_variant_1'
+    EventDescription: 'Detected execution of the system process {object.process.name} by {subject.process.name} launched from a user path on host {event_src.host}.'
