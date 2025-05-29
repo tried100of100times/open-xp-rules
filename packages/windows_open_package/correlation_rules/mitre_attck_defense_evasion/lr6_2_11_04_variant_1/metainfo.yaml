@@ -1,0 +1,13 @@
+ContentAutoName: lr6_2_11_04_variant_1
+ExpertContext:
+  Created: 16.05.2025
+  Updated: 29.05.2025
+  KnowledgeHolders:
+    - '07_03'
+  Usecases: []
+  Falsepositives: []
+  References: []
+  Improvements: []
+EventDescriptions:
+  - Criteria: correlation_name = "lr6_2_11_04_variant_1"
+    LocalizationId: corrname_lr6_2_11_04_variant_1
