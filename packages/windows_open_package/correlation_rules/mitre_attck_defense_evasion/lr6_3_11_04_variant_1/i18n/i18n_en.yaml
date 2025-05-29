@@ -1,0 +1,4 @@
+Description: 'Suspicious behavior detected — multiple distinct executables were launched from a non-system directory.'
+EventDescriptions:
+  - LocalizationId: 'corrname_lr6_3_11_04_variant_1'
+    EventDescription: 'The process {subject.process.fullpath} attempted to launch multiple applications from a non-system folder on host {event_src.host}.This anomalous activity warrants further investigation.'

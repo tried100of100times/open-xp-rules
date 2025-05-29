@@ -1,0 +1,26 @@
+ContentAutoName: lr6_3_11_04_variant_1
+ExpertContext:
+  Created: 22.05.2025
+  Updated: 29.05.2025
+  KnowledgeHolders:
+    - '[06_04]'
+  Usecases: []
+  Falsepositives: []
+  References:
+    - https://attack.mitre.org/techniques/T1055/
+  Improvements: []
+  DataSources:
+    - Provider: Microsoft-Windows-Sysmon
+      EventID:
+        - 10
+ObjectId: SEC-CR-822455582
+ContentRelations:
+  Implements:
+    ATTACK:
+      defense-evasion:
+        - T1055
+      privilege-escalation:
+        - T1055
+EventDescriptions:
+  - Criteria: correlation_name = "lr6_3_11_04_variant_1"
+    LocalizationId: corrname_lr6_3_11_04_variant_1
