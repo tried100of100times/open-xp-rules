@@ -1,0 +1,4 @@
+Description: 'Правило детектирует и коррелирует случаи инициации удалённых системных потоков, инициированных процессами, не относящимися к системному ядру, тем самым выявляя аномалии в поведении процессов с повышенными привилегиями и потенциальные инжекции кода вне стандартных доверенных контекстов исполнения.'
+EventDescriptions:
+  - LocalizationId: 'corrname_qwe_11_04'
+    EventDescription: 'The process with the full path {subject.process.fullpath} orchestrated the instantiation of a remote thread with the full path {object.process.fullpath} within the context of host {event_src.host}, indicating a potential interprocess code injection technique executed beyond conventional trust boundaries.'
